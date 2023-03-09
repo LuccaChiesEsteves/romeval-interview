@@ -32,6 +32,7 @@ public class TrainingController {
         return trainingService.getEventsByTrainingId(trainingId);
     }
 
+
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public String createTestTraining() {
