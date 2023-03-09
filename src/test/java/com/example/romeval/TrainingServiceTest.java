@@ -2,9 +2,11 @@ package com.example.romeval;
 
 import com.example.romeval.business.NotificationService;
 import com.example.romeval.business.TrainingService;
+import com.example.romeval.dataaccess.TrainingRepository;
 import com.example.romeval.domain.Training;
 import com.example.romeval.exception.RomEvalException;
 import com.example.romeval.model.TrainingStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
@@ -28,8 +30,16 @@ class TrainingServiceTest {
     @Autowired
     private TrainingService underTest;
 
+    @Autowired
+    private TrainingRepository trainingRepository;
+
     @MockBean
     private NotificationService notificationService;
+
+    @AfterEach
+    void teardown() {
+        trainingRepository.deleteAll();
+    }
 
     @Test
     void shouldReturnIdAfterSavingTraining() {
