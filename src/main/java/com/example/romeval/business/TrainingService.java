@@ -13,6 +13,7 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.EntityNotFoundException;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ public class TrainingService {
     private static final String NOTIFICATION_MESSAGE = "Training {1} has been created";
 
     private static final String UNIQUE_ABBREVIATION_ERROR = "Training abbreviation must be unique";
+    private static final String GENERIC_SAVE_ERROR = "Could not save training";
 
     /**
      * Saves the Training and notifies the trainer about new event
@@ -39,14 +41,13 @@ public class TrainingService {
      * @return the new Training identifier
      */
     public Long save(Training training) {
-        try {
-            trainingRepository.save(training);
-            notifyTrainers(training, MessageFormat.format(NOTIFICATION_MESSAGE, training.getName()));
-        } catch (Exception e) {
-            throw new RomEvalException(UNIQUE_ABBREVIATION_ERROR);
+        validateTraining(training);
+        Training entity = trainingRepository.save(training);
+        if(ObjectUtils.isEmpty(entity)) {
+           throw new RomEvalException(GENERIC_SAVE_ERROR);
         }
-
-        return training.getId();
+        notifyTrainers(entity, MessageFormat.format(NOTIFICATION_MESSAGE, entity.getName()));
+        return entity.getId();
     }
 
     public Set<EventDto> getEventsByTrainingId(Long trainingId) {
@@ -61,5 +62,12 @@ public class TrainingService {
         Set<Trainer> trainers = new java.util.HashSet<>(Collections.emptySet());
         training.getEvents().forEach(event -> trainers.add(event.getTrainer()));
         trainers.forEach(trainer -> notificationService.notifyTrainerAboutEvent(trainer, message));
+    }
+
+    private void validateTraining(Training training) {
+        Optional<Training> existingTraining = trainingRepository.findByAbbreviation(training.getAbbreviation());
+        if(existingTraining.isPresent()) {
+            throw new RomEvalException(UNIQUE_ABBREVIATION_ERROR);
+        }
     }
 }

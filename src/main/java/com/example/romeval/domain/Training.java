@@ -41,7 +41,7 @@ public class Training {
     @Column(nullable = false)
     private String description;
 
-    @OneToMany(/*mappedBy = "training",*/ cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(/*mappedBy = "training",*/ cascade = CascadeType.ALL)
     @JoinColumn(name = "training_id")
     private Set<Event> events;
 
